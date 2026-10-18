@@ -112,3 +112,19 @@ Integration needs a view of both halves at once, so I did this phase myself inst
   - Vitest shares workers across files
   - Angular CLI analytics are pinned off
 - **Lesson:** the first live run accidentally hit a dev server *the user* had started on the same ports. Further runs used separate ports and a scratch database.
+
+### Phase 4: Deployment and documentation (orchestrator)
+- **Deployment shape changed, with the user's approval.** The plan had two Render services. While writing the blueprint, it became clear that each service needs the other's URL before either exists. The AI asked the user instead of picking for them; the user chose **one service** in which Express serves the Angular build.
+- **A CSP issue caught before deploying.** Angular's critical-CSS inlining adds an inline `onload` handler, which helmet's `script-src-attr 'none'` blocks, leaving the page unstyled. We disabled inlining rather than loosen the CSP. A production-mode run in headless Chrome confirmed the fix.
+- **Docs written from measurements, not estimates.** Every timing in `06-performance.md` was measured during Phase 2–4 runs. Claims were checked against the code (pragmas, ORDER BY usage, stylesheet size) and one figure was corrected.
+
+## 4. What worked and what didn't
+- **Worked:**
+  - A frozen API contract let two agents build the backend and frontend in parallel with **no integration bugs**. The only Phase 3 fixes were UX polish.
+  - Requiring every agent to run typecheck, lint and tests before each commit kept every milestone green.
+  - The agents reported their deviations from the contract explicitly. Examples: rejecting `pageSize > 100` instead of capping it, and moving Chart.js out of the initial bundle. That made review quick.
+- **Needed human correction:**
+  - The first plan was missing Swagger and a choice of seed size.
+  - The deployment shape had to change.
+  - A live test accidentally hit the user's own running dev server.
+- **Verified rather than trusted:** every agent report was re-checked by re-running the full suites on the merged `main`, and insight figures were checked against independent SQL.

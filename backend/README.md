@@ -40,12 +40,13 @@ Seeding is deterministic (mulberry32, seed 42): the same count always produces t
 
 A `.env` file in this folder is loaded automatically (except when `NODE_ENV=test`).
 
-| Variable      | Default                 | Notes                                           |
-| ------------- | ----------------------- | ----------------------------------------------- |
-| `PORT`        | `3000`                  | HTTP port                                       |
-| `DB_PATH`     | `./data/esms.db`        | SQLite file (use `:memory:` for throwaway runs) |
-| `CORS_ORIGIN` | `http://localhost:4200` | Allowed origin(s), comma-separated              |
-| `NODE_ENV`    | `development`           | `development`, `production` or `test`           |
+| Variable      | Default                 | Notes                                                              |
+| ------------- | ----------------------- | ------------------------------------------------------------------ |
+| `PORT`        | `3000`                  | HTTP port                                                          |
+| `DB_PATH`     | `./data/esms.db`        | SQLite file (use `:memory:` for throwaway runs)                    |
+| `CORS_ORIGIN` | `http://localhost:4200` | Allowed origin(s), comma-separated                                 |
+| `NODE_ENV`    | `development`           | `development`, `production` or `test`                              |
+| `STATIC_DIR`  | unset                   | Built Angular app to serve next to the API (single-service deploy) |
 
 ## Structure
 
@@ -54,7 +55,7 @@ Each feature module is layered **routes** (HTTP only) → **service** (business 
 
 ```
 src/
-  app.ts                 createApp({ db, now? }) factory: middleware, /api router, 404 + errors
+  app.ts                 createApp({ db, now?, staticDir? }) factory: middleware, /api router, 404 + errors
   routes.ts              /api router: wires repositories, services and module routers
   server.ts              Entry point: open DB_PATH, migrate, listen; graceful shutdown
   config.ts              Typed, frozen config from env
