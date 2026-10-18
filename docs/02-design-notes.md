@@ -93,6 +93,7 @@ Base path `/api`. JSON uses camelCase. Dev ports: API `3000`, UI `4200`.
 | Status | code |
 |---|---|
 | 400 | `VALIDATION_ERROR` |
+| 413 | `VALIDATION_ERROR` (request body over 100 kB; kept as 413 because that is the correct HTTP status) |
 | 404 | `NOT_FOUND` |
 | 409 | `CONFLICT` |
 | 500 | `INTERNAL_ERROR` |

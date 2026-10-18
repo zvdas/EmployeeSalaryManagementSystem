@@ -70,3 +70,26 @@ Both agents received the same guardrails:
 > - TypeScript models mirroring §4 of the contract *exactly*
 > - responsive Material shell (toolbar + sidenav: Employees, Insights, API Docs link) with lazy-loaded placeholder routes
 > - Jest tests for the shell and routes; Prettier config
+
+### Phase 2: Core features (two agents in parallel, each in its own git worktree)
+**Process change:** I wanted milestone-sized commits while the two agents worked at the same time. So each agent ran in an **isolated git worktree** and committed its own milestones on its own branch. Every milestone had a fixed commit subject, and the agent had to pass `typecheck && lint && test` before each commit. The orchestrator then reviewed both branches, re-ran every check, and merged them into `main`. The agents touch separate folders, so the merge cannot conflict.
+
+**Backend agent (summary of the prompt)**
+> Implement these milestones, committing after each:
+> 1. **Schema and migrations.** Reference data in one TS module; countries upserted during migration; idempotent migrations that work from `dist/`; `createApp({ db })` now needs a DB.
+> 2. **Deterministic seed.** A *pure* `generateEmployees(count, seed)` using mulberry32. Weighted countries and employment types. Salary = base × country factor × jitter ÷ FX. Hire dates come only from the PRNG, never `Date.now`. Insert in a single transaction; CLI with `--count`.
+> 3. **CRUD.** Routes → service → repository. zod validation with a reusable middleware; parsed values go on `res.locals`, because Express 5's `req.query` is read-only. Business rules: title must belong to the department; duplicate email → 409. An injected clock for the "not in the future" rule. Parameterised SQL with a whitelist of sort columns. Plus `/meta`.
+> 4. **Insights.** Pure `stats.ts` (median, quartiles, buckets, IQR outliers); SQL aggregates; medians computed in TS. Tests use a hand-built fixture whose expected numbers are **worked out by hand inside the test**.
+> 5. **CSV export.** Streamed with `.iterate()`, RFC 4180 escaping, and **CSV formula-injection protection**.
+> 6. **Seed endpoints.** `count` accepts only `100 | 10000`; 409 if the DB is not empty.
+> 7. **OpenAPI** generated from the *same* zod schemas, Swagger UI at `/api/docs`, with the CSP relaxed only on that route.
+>
+> Final check: seed twice from scratch and compare hashes (determinism), then time the endpoints against 10k rows.
+
+**Frontend agent (summary of the prompt)**
+> Build strictly against the contract; the backend is not available. Use zoneless signals, OnPush, `inject()`, new control flow, typed reactive forms, and no `any`. Milestones, committing after each:
+> 1. **Core.** API services (empty filters left out of query params), an error interceptor that shows a snackbar with the contract's `error.message`, a money pipe, and a data-refresh signal.
+> 2. **Employee list.** Server-side sort and paginator, debounced search, job-title options that depend on the department, and cancellation of in-flight requests.
+> 3. **Dialogs.** Create/edit with validators mirroring the server. `YYYY-MM-DD` built from *local* date parts to avoid the UTC off-by-one bug. A 409 response maps to an error on the email field. Delete confirmation, and a CSV download via a blob.
+> 4. **Insights dashboard.** KPI cards, country/title/department tables, Chart.js bar charts and a histogram. The chart-data mappers are pure functions with their own tests.
+> 5. **Seed prompt.** A non-blocking status check on startup; a `disableClose` dialog offering 100 or 10,000; refresh on success.
