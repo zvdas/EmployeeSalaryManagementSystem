@@ -2,7 +2,7 @@
 
 ACME's HR team manages salary data for 10,000 employees across 8 countries in spreadsheets. This web app replaces that. With it, the HR Manager can **maintain salary records** and **answer how the organisation pays people**.
 
-- **Live demo:** _add the Render URL after deploying_
+- **Live demo:** https://acme-salary-management-ifym.onrender.com (Swagger: [/api/docs](https://acme-salary-management-ifym.onrender.com/api/docs/)). Free tier: allow 30–60 s to wake up; the database resets on restart, after which the app offers to load sample data.
 - **Demo video:** _add a link after recording_ (script: [docs/demo-script.md](docs/demo-script.md))
 
 ## Features
