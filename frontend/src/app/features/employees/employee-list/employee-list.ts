@@ -1,37 +1,58 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { catchError, EMPTY, finalize, switchMap } from 'rxjs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { catchError, EMPTY, filter, finalize, switchMap } from 'rxjs';
 
-import { EmployeeFilters, EmployeeQuery, EmployeeSortBy, SortDir } from '../../../core/models';
+import {
+  Employee,
+  EmployeeFilters,
+  EmployeeQuery,
+  EmployeeSortBy,
+  SortDir,
+} from '../../../core/models';
 import { DataRefreshService } from '../../../core/services/data-refresh.service';
 import { EmployeeApiService } from '../../../core/services/employee-api.service';
 import { MetaService } from '../../../core/services/meta.service';
+import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog';
+import { downloadBlob } from '../../../shared/download';
 import { MoneyPipe } from '../../../shared/money';
 import { EmployeeFilterBar } from '../employee-filter-bar/employee-filter-bar';
+import {
+  EmployeeFormDialog,
+  EmployeeFormDialogData,
+} from '../employee-form-dialog/employee-form-dialog';
 
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 export const DEFAULT_PAGE_SIZE = 25;
+export const EXPORT_FILENAME = 'employees.csv';
 const DEFAULT_SORT: { sortBy: EmployeeSortBy; sortDir: SortDir } = {
   sortBy: 'fullName',
   sortDir: 'asc',
 };
 
-/** Server-side paginated, sortable and filterable employee directory. */
+/** Server-side paginated, sortable and filterable employee directory with CRUD and export. */
 @Component({
   selector: 'app-employee-list',
   imports: [
     DatePipe,
+    MatButtonModule,
     MatCardModule,
+    MatIconModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatSortModule,
     MatTableModule,
+    MatTooltipModule,
     MoneyPipe,
     EmployeeFilterBar,
   ],
@@ -42,6 +63,9 @@ const DEFAULT_SORT: { sortBy: EmployeeSortBy; sortDir: SortDir } = {
 export class EmployeeList {
   private readonly api = inject(EmployeeApiService);
   private readonly refresh = inject(DataRefreshService);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly document = inject(DOCUMENT);
   protected readonly meta = inject(MetaService);
 
   /** Column ids double as the API's `sortBy` values for sortable columns. */
@@ -53,6 +77,7 @@ export class EmployeeList {
     'countryCode',
     'annualSalaryUsd',
     'hireDate',
+    'actions',
   ] as const;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly defaultSort = DEFAULT_SORT;
@@ -71,6 +96,7 @@ export class EmployeeList {
   }));
 
   protected readonly loading = signal(false);
+  protected readonly exporting = signal(false);
 
   /** Re-runs on every query or refresh change; switchMap cancels the superseded request. */
   private readonly result = toSignal(
@@ -104,5 +130,56 @@ export class EmployeeList {
   protected onPage({ pageIndex, pageSize }: PageEvent): void {
     this.page.set(pageIndex + 1);
     this.pageSize.set(pageSize);
+  }
+
+  /** Opens the create dialog, or the edit dialog when an employee is given. */
+  protected openForm(employee?: Employee): void {
+    this.dialog
+      .open<EmployeeFormDialog, EmployeeFormDialogData, Employee>(EmployeeFormDialog, {
+        data: { employee },
+        width: '640px',
+        maxWidth: 'calc(100vw - 32px)',
+      })
+      .afterClosed()
+      .pipe(filter((saved) => !!saved))
+      .subscribe(() => {
+        this.snackBar.open(employee ? 'Employee updated' : 'Employee added', 'Dismiss', {
+          duration: 3000,
+        });
+        this.refresh.bump();
+      });
+  }
+
+  protected confirmDelete(employee: Employee): void {
+    this.dialog
+      .open<ConfirmDialog, ConfirmDialogData, boolean>(ConfirmDialog, {
+        data: {
+          title: 'Delete employee?',
+          message: `${employee.fullName} (${employee.employeeCode}) will be permanently removed.`,
+          confirmLabel: 'Delete',
+        },
+      })
+      .afterClosed()
+      .pipe(
+        filter((confirmed) => confirmed === true),
+        switchMap(() => this.api.delete(employee.id).pipe(catchError(() => EMPTY))),
+      )
+      .subscribe(() => {
+        this.snackBar.open('Employee deleted', 'Dismiss', { duration: 3000 });
+        // Deleting the only row of the last page would otherwise leave an empty page.
+        if (this.rows().length === 1 && this.page() > 1) this.page.update((p) => p - 1);
+        this.refresh.bump();
+      });
+  }
+
+  protected exportCsv(): void {
+    this.exporting.set(true);
+    this.api
+      .exportCsv(this.filters())
+      .pipe(
+        catchError(() => EMPTY),
+        finalize(() => this.exporting.set(false)),
+      )
+      .subscribe((blob) => downloadBlob(blob, EXPORT_FILENAME, this.document));
   }
 }

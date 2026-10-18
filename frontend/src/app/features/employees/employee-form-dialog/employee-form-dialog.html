@@ -1,0 +1,95 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit employee' : 'Add employee' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <mat-dialog-content class="grid">
+    <mat-form-field class="span-2">
+      <mat-label>Full name</mat-label>
+      <input matInput formControlName="fullName" autocomplete="name" />
+      <mat-error>{{ errorFor(form.controls.fullName) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="span-2">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="email" />
+      <mat-error>{{ errorFor(form.controls.email) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Department</mat-label>
+      <mat-select formControlName="department">
+        @for (department of meta.departments(); track department) {
+          <mat-option [value]="department">{{ department }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ errorFor(form.controls.department) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Job title</mat-label>
+      <mat-select formControlName="jobTitle">
+        @for (title of titles(); track title) {
+          <mat-option [value]="title">{{ title }}</mat-option>
+        }
+      </mat-select>
+      @if (!titles().length) {
+        <mat-hint>Choose a department first</mat-hint>
+      }
+      <mat-error>{{ errorFor(form.controls.jobTitle) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Country</mat-label>
+      <mat-select formControlName="countryCode">
+        @for (country of meta.countries(); track country.code) {
+          <mat-option [value]="country.code">{{ country.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ errorFor(form.controls.countryCode) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Annual salary</mat-label>
+      <input
+        matInput
+        type="number"
+        inputmode="numeric"
+        min="1"
+        step="1"
+        formControlName="annualSalary"
+      />
+      @if (currency()) {
+        <span matTextSuffix class="currency">{{ currency() }}</span>
+      }
+      <mat-hint>Local currency, whole units</mat-hint>
+      <mat-error>{{ errorFor(form.controls.annualSalary) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Employment type</mat-label>
+      <mat-select formControlName="employmentType">
+        @for (type of meta.employmentTypes(); track type) {
+          <mat-option [value]="type">{{ employmentTypeLabels[type] }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ errorFor(form.controls.employmentType) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Hire date</mat-label>
+      <input matInput [matDatepicker]="picker" [max]="today" formControlName="hireDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" aria-label="Open calendar" />
+      <mat-datepicker #picker />
+      <mat-error>{{ errorFor(form.controls.hireDate) }}</mat-error>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="submitting()">Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="submitting()">
+      @if (submitting()) {
+        <mat-spinner diameter="18" aria-label="Saving" />
+      }
+      {{ isEdit ? 'Save changes' : 'Add employee' }}
+    </button>
+  </mat-dialog-actions>
+</form>

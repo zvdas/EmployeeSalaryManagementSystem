@@ -7,15 +7,21 @@ import {
   TestRequest,
 } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorHarness } from '@angular/material/paginator/testing';
 import { MatSortHarness } from '@angular/material/sort/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
+import { of } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { Employee } from '../../../core/models';
 import { DataRefreshService } from '../../../core/services/data-refresh.service';
 import { employeeFixture, META_FIXTURE } from '../../../../testing/fixtures';
+import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { EmployeeFilterBar } from '../employee-filter-bar/employee-filter-bar';
+import { EmployeeFormDialog } from '../employee-form-dialog/employee-form-dialog';
 import { EmployeeList } from './employee-list';
 
 const listUrl = `${environment.apiUrl}/employees`;
@@ -24,12 +30,26 @@ describe('EmployeeList', () => {
   let fixture: ComponentFixture<EmployeeList>;
   let http: HttpTestingController;
   let loader: HarnessLoader;
+  const dialogOpen = jest.fn();
+  const snackBarOpen = jest.fn();
+
+  /** The next dialog opened closes with `result`. */
+  function nextDialogResult(result: unknown): void {
+    dialogOpen.mockReturnValueOnce({ afterClosed: () => of(result) });
+  }
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [EmployeeList],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: MatDialog, useValue: { open: dialogOpen } },
+        { provide: MatSnackBar, useValue: { open: snackBarOpen } },
+      ],
     });
+    dialogOpen.mockReset();
+    snackBarOpen.mockReset();
     http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(EmployeeList);
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -134,5 +154,98 @@ describe('EmployeeList', () => {
 
     expect(first.cancelled).toBe(true);
     await respond(expectList());
+  });
+
+  describe('actions', () => {
+    const ada = employeeFixture({ id: 5 });
+
+    beforeEach(async () => {
+      await respond(expectList(), [ada]);
+    });
+
+    async function clickButton(text: string | RegExp): Promise<void> {
+      await (await loader.getHarness(MatButtonHarness.with({ text }))).click();
+    }
+
+    async function clickIcon(ariaLabel: string): Promise<void> {
+      const selector = `[aria-label="${ariaLabel}"]`;
+      await (await loader.getHarness(MatButtonHarness.with({ selector }))).click();
+    }
+
+    it('opens the create dialog and reloads after a save', async () => {
+      nextDialogResult(employeeFixture({ id: 99 }));
+      await clickButton(/Add employee/);
+
+      expect(dialogOpen).toHaveBeenCalledWith(
+        EmployeeFormDialog,
+        expect.objectContaining({ data: { employee: undefined } }),
+      );
+      expect(snackBarOpen).toHaveBeenCalledWith('Employee added', 'Dismiss', expect.any(Object));
+      await respond(expectList(), [ada]);
+    });
+
+    it('opens the edit dialog with the row and does nothing when cancelled', async () => {
+      nextDialogResult(undefined);
+      await clickIcon('Edit Ada Lovelace');
+
+      expect(dialogOpen).toHaveBeenCalledWith(
+        EmployeeFormDialog,
+        expect.objectContaining({ data: { employee: ada } }),
+      );
+      expect(snackBarOpen).not.toHaveBeenCalled();
+      http.expectNone((r) => r.url === listUrl);
+    });
+
+    it('deletes after confirmation, then notifies and reloads', async () => {
+      nextDialogResult(true);
+      await clickIcon('Delete Ada Lovelace');
+
+      expect(dialogOpen).toHaveBeenCalledWith(
+        ConfirmDialog,
+        expect.objectContaining({ data: expect.objectContaining({ confirmLabel: 'Delete' }) }),
+      );
+      const req = http.expectOne(`${listUrl}/5`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null, { status: 204, statusText: 'No Content' });
+      await fixture.whenStable();
+
+      expect(snackBarOpen).toHaveBeenCalledWith('Employee deleted', 'Dismiss', expect.any(Object));
+      await respond(expectList());
+    });
+
+    it('does not delete when the confirmation is cancelled', async () => {
+      nextDialogResult(false);
+      await clickIcon('Delete Ada Lovelace');
+      http.expectNone(`${listUrl}/5`);
+    });
+
+    it('exports the filtered list as employees.csv', async () => {
+      const createObjectURL = jest.fn(() => 'blob:csv');
+      const revokeObjectURL = jest.fn();
+      Object.assign(URL, { createObjectURL, revokeObjectURL });
+      const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {
+        /* no navigation in jsdom */
+      });
+
+      const bar = fixture.debugElement.query(By.directive(EmployeeFilterBar))
+        .componentInstance as EmployeeFilterBar;
+      bar.filtersChange.emit({ department: 'Sales' });
+      await fixture.whenStable();
+      await respond(expectList());
+
+      await clickButton(/Export CSV/);
+      const req = http.expectOne((r) => r.url === `${listUrl}/export.csv`);
+      expect(req.request.params.toString()).toBe('department=Sales');
+      const blob = new Blob(['employeeCode\n'], { type: 'text/csv' });
+      req.flush(blob);
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(createObjectURL).toHaveBeenCalledWith(blob);
+      const anchor = click.mock.contexts[0] as HTMLAnchorElement;
+      expect(anchor.download).toBe('employees.csv');
+      expect(anchor.href).toBe('blob:csv');
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:csv');
+      click.mockRestore();
+    });
   });
 });

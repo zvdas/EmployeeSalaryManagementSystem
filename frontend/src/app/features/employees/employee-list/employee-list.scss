@@ -63,3 +63,15 @@ table {
   text-align: center;
   color: var(--mat-sys-on-surface-variant);
 }
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
