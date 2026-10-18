@@ -2,9 +2,9 @@ import express from 'express';
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { createApp } from '../src/app.js';
 import { ConflictError, NotFoundError, ValidationError } from '../src/lib/errors.js';
 import { errorHandler } from '../src/middleware/errorHandler.js';
+import { createTestApp } from './helpers/testDb.js';
 
 /** A tiny app whose routes throw specific errors, finished by the real error handler. */
 function buildThrowingApp() {
@@ -108,7 +108,7 @@ describe('errorHandler', () => {
   });
 
   it('maps malformed JSON to 400 on the real app too', async () => {
-    const res = await request(createApp())
+    const res = await request(createTestApp())
       .post('/api/health')
       .set('Content-Type', 'application/json')
       .send('{not json');

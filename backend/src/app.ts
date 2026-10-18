@@ -8,11 +8,11 @@ import { notFound } from './middleware/notFound.js';
 import { createApiRouter } from './routes.js';
 
 export interface AppDeps {
-  /** Injected SQLite connection (a `:memory:` DB in tests). Wired up in Phase 2. */
-  db?: Database;
+  /** Injected SQLite connection (a `:memory:` DB in tests). */
+  db: Database;
 }
 
-export function createApp(deps: AppDeps = {}): Express {
+export function createApp(deps: AppDeps): Express {
   const app = express();
 
   app.disable('x-powered-by');
