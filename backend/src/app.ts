@@ -10,6 +10,8 @@ import { createApiRouter } from './routes.js';
 export interface AppDeps {
   /** Injected SQLite connection (a `:memory:` DB in tests). */
   db: Database;
+  /** Clock used for date rules such as "hire date not in the future"; defaults to real time. */
+  now?: () => Date;
 }
 
 export function createApp(deps: AppDeps): Express {
