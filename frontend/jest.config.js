@@ -8,6 +8,8 @@ module.exports = {
     testEnvironment: 'jest-preset-angular/environments/jest-jsdom-env',
   }),
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
-  testMatch: ['<rootDir>/src/**/*.spec.ts'],
+  // A regex rather than a glob: on Windows the glob form matched nothing when the repo lives under
+  // a dot-directory (e.g. a git worktree under `.claude/`).
+  testRegex: String.raw`[/\\]src[/\\].+\.spec\.ts$`,
   collectCoverageFrom: ['src/app/**/*.ts', '!src/app/**/*.spec.ts', '!src/app/**/index.ts'],
 };

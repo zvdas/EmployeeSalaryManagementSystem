@@ -57,13 +57,17 @@ export type EmployeeSortBy =
 
 export type SortDir = 'asc' | 'desc';
 
-/** Query parameters for `GET /employees` (and the same filters for `GET /employees/export.csv`). */
-export interface EmployeeQuery {
+/** Filters shared by `GET /employees` and `GET /employees/export.csv`. */
+export interface EmployeeFilters {
   /** name/email/code, case-insensitive contains */
   search?: string;
   country?: string;
   department?: string;
   jobTitle?: string;
+}
+
+/** Query parameters for `GET /employees`. */
+export interface EmployeeQuery extends EmployeeFilters {
   /** default 1 */
   page?: number;
   /** default 25, max 100 */
