@@ -93,3 +93,22 @@ Both agents received the same guardrails:
 > 3. **Dialogs.** Create/edit with validators mirroring the server. `YYYY-MM-DD` built from *local* date parts to avoid the UTC off-by-one bug. A 409 response maps to an error on the email field. Delete confirmation, and a CSV download via a blob.
 > 4. **Insights dashboard.** KPI cards, country/title/department tables, Chart.js bar charts and a histogram. The chart-data mappers are pure functions with their own tests.
 > 5. **Seed prompt.** A non-blocking status check on startup; a `disableClose` dialog offering 100 or 10,000; refresh on success.
+
+### Phase 3: Integration and hardening (done by the orchestrator, not delegated)
+Integration needs a view of both halves at once, so I did this phase myself instead of handing it to an agent.
+- **Contract check:** the backend's validation `details[].path` values are plain field names (`email`, `countryCode`), which match the frontend's form-control mapping.
+- **Live run:** the built API ran against a fresh database, alongside `ng serve`. I exercised every flow over HTTP:
+  - the seed status, trigger and 409 paths
+  - employee create/update/delete, including the 400 and 409 cases
+  - each insights endpoint
+  - CSV export, including the CORS-exposed `Content-Disposition`
+  - Swagger
+- **Cross-check against the database:** the insights numbers were compared with direct SQL queries and match exactly.
+- **UI check:** both pages were rendered in headless Chrome. The seed dialog was checked against an empty database.
+- **Fixes:**
+  - errors that are already shown inline are no longer also shown in a snackbar
+  - a negative low outlier threshold is hidden
+  - the empty-directory message differs from the no-filter-match message
+  - Vitest shares workers across files
+  - Angular CLI analytics are pinned off
+- **Lesson:** the first live run accidentally hit a dev server *the user* had started on the same ports. Further runs used separate ports and a scratch database.
