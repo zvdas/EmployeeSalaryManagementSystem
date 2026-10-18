@@ -1,0 +1,29 @@
+# Render Blueprint: one free web service. Express serves the API under /api and the built
+# Angular app for every other path, so there is a single URL and no CORS configuration.
+# Deploy: Render dashboard -> New -> Blueprint -> select this repository.
+services:
+  - type: web
+    name: acme-salary-management
+    runtime: node
+    plan: free
+    # NODE_ENV=production applies at build time too, so dev dependencies (TypeScript, Angular CLI)
+    # must be included explicitly.
+    buildCommand: >-
+      cd frontend && npm ci --include=dev && npm run build &&
+      cd ../backend && npm ci --include=dev && npm run build
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NODE_ENV
+        value: production
+      - key: NG_CLI_ANALYTICS
+        value: "false"
+      # Relative to backend/, where the start command runs.
+      - key: STATIC_DIR
+        value: ../frontend/dist/frontend/browser
+      # The free plan's disk is ephemeral: the database is recreated (empty) on each restart or
+      # deploy, and the UI then asks whether to load 100 or 10,000 employees.
+      - key: DB_PATH
+        value: ./data/esms.db

@@ -19,7 +19,7 @@ Planning notes written before implementation. This document is the **single sour
 | API docs | @asteasolutions/zod-to-openapi + swagger-ui-express | Docs are generated from the code, so they cannot drift |
 | UI | Angular (standalone + signals), Angular Material, ng2-charts | Required framework; Material provides table, paginator, sort and dialogs |
 | Tests | Vitest + Supertest (API), Jest (UI) | Fast and deterministic |
-| Hosting | Render blueprint (web service + static site) | Free tier; deploys from GitHub |
+| Hosting | Render blueprint: **one** web service. Express serves `/api` and the built Angular app | Free tier; one URL, so no CORS or build-time API URL. Changed from the planned two services once it was clear neither service knows the other's URL before the first deploy |
 
 ## 3. Domain model
 
