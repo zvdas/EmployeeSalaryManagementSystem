@@ -7,10 +7,11 @@ import { runMigrations } from './db/migrator.js';
 const db = openDatabase(config.DB_PATH);
 runMigrations(db);
 
-const app = createApp({ db });
+const app = createApp({ db, staticDir: config.STATIC_DIR });
 
 const server = app.listen(config.PORT, () => {
   console.log(`ESMS API listening on http://localhost:${config.PORT}/api (${config.NODE_ENV})`);
+  if (config.STATIC_DIR) console.log(`Serving UI from ${config.STATIC_DIR}`);
 });
 
 server.on('error', (err) => {

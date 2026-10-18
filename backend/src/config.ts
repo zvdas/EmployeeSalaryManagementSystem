@@ -7,6 +7,8 @@ export interface Config {
   readonly DB_PATH: string;
   readonly CORS_ORIGIN: readonly string[];
   readonly NODE_ENV: NodeEnv;
+  /** Built frontend to serve alongside the API (single-service deployment); unset in dev. */
+  readonly STATIC_DIR: string | undefined;
 }
 
 // Load a local .env file when present (never in tests, so they stay deterministic).
@@ -41,6 +43,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     DB_PATH: env.DB_PATH?.trim() || './data/esms.db',
     CORS_ORIGIN: Object.freeze(parseOrigins(env.CORS_ORIGIN, 'http://localhost:4200')),
     NODE_ENV: parseNodeEnv(env.NODE_ENV),
+    STATIC_DIR: env.STATIC_DIR?.trim() || undefined,
   });
 }
 
