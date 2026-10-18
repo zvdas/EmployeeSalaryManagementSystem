@@ -1,0 +1,39 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  @if (sidenavMode() === 'over') {
+    <button mat-icon-button type="button" aria-label="Toggle navigation" (click)="sidenav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  }
+  <span class="app-title">{{ title }}</span>
+</mat-toolbar>
+
+<mat-sidenav-container class="app-container">
+  <mat-sidenav #sidenav class="app-sidenav" [mode]="sidenavMode()" [opened]="sidenavOpened()">
+    <mat-nav-list aria-label="Main navigation">
+      @for (link of navLinks; track link.path) {
+        <a
+          mat-list-item
+          [routerLink]="link.path"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [activated]="rla.isActive"
+          [attr.aria-current]="rla.isActive ? 'page' : null"
+          (click)="sidenavMode() === 'over' && sidenav.close()"
+        >
+          <mat-icon matListItemIcon>{{ link.icon }}</mat-icon>
+          <span matListItemTitle>{{ link.label }}</span>
+        </a>
+      }
+      <a mat-list-item [href]="apiDocsUrl" target="_blank" rel="noopener noreferrer">
+        <mat-icon matListItemIcon>description</mat-icon>
+        <span matListItemTitle>API Docs</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="app-content">
+    <main>
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

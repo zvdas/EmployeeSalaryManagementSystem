@@ -41,3 +41,32 @@ On reviewing the first plan, the user asked for:
 
 ## 3. Sub-agent prompts
 The prompts given to each implementation agent are appended below as they are issued.
+
+### Phase 1: Scaffolding (two agents in parallel)
+Both agents received the same guardrails:
+- Read `02-design-notes.md` first; it is the frozen contract.
+- Work **only** in your own folder; don't touch the other agent's folder.
+- **Never run state-changing git commands.** The orchestrator reviews and commits.
+- Scaffold only; don't implement Phase 2 features early.
+- Never block on an interactive prompt.
+- Before reporting, run every verification command (install, typecheck, lint, test, build, smoke-run) and fix any failures.
+- Finish with a concise report: versions installed, pass/fail output, and any deviations.
+
+**Backend agent (summary of the prompt)**
+> Scaffold `backend/`:
+> - Express 5 + TypeScript (strict). Dependencies for later phases installed up front (zod, better-sqlite3, helmet, cors, swagger-ui-express, zod-to-openapi). Check that zod-to-openapi works with the installed zod major, and that better-sqlite3's native binary loads on Windows.
+> - `config.ts`, plus an `AppError` hierarchy (`NotFound`, `Validation`, `Conflict`).
+> - `errorHandler`, which maps AppError, ZodError and malformed JSON into the contract's error shape and returns 500 without leaking stacks; plus `notFound`.
+> - A `createApp({ db })` factory with `GET /api/health`.
+> - `server.ts` with graceful SIGTERM handling.
+> - ESLint (flat config) + Prettier, and Vitest + Supertest tests for health, 404 and the error mapping.
+
+**Frontend agent (summary of the prompt)**
+> Scaffold `frontend/` with the latest stable Angular CLI:
+> - standalone, routing, SCSS, no SSR, strict, `--skip-git`
+> - Angular Material via `ng add`; ng2-charts registered with `provideCharts`
+> - **Replace the CLI's default test runner with Jest** (jest-preset-angular)
+> - environment files with `apiUrl`, and `provideHttpClient(withFetch())`
+> - TypeScript models mirroring §4 of the contract *exactly*
+> - responsive Material shell (toolbar + sidenav: Employees, Insights, API Docs link) with lazy-loaded placeholder routes
+> - Jest tests for the shell and routes; Prettier config
