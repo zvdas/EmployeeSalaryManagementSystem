@@ -21,14 +21,19 @@ function parseJson(text: string): unknown {
   }
 }
 
+/** The user-facing message for a failed request whose body has already been parsed. */
+export function errorMessageFromBody(status: number, body: unknown): string {
+  if (status === 0) return OFFLINE_ERROR_MESSAGE;
+  return isApiError(body) ? body.error.message : FALLBACK_ERROR_MESSAGE;
+}
+
 /**
- * The user-facing message for a failed request. Blob responses (e.g. the CSV export) carry
- * their JSON error body as a Blob, so it is read and parsed first.
+ * Like `errorMessageFromBody`, but also handles blob responses (e.g. the CSV export), which
+ * carry their JSON error body as a Blob that must be read first.
  */
 export async function errorMessageFor(err: HttpErrorResponse): Promise<string> {
-  if (err.status === 0) return OFFLINE_ERROR_MESSAGE;
   const body: unknown = err.error instanceof Blob ? parseJson(await err.error.text()) : err.error;
-  return isApiError(body) ? body.error.message : FALLBACK_ERROR_MESSAGE;
+  return errorMessageFromBody(err.status, body);
 }
 
 /** Shows every HTTP failure in a snackbar, then rethrows it for callers to handle. */

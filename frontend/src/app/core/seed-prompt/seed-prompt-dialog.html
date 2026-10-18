@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>Your database is empty</h2>
+
+<mat-dialog-content>
+  <p>
+    Load sample employees to get started. The data is generated deterministically, with salaries in
+    each country's local currency.
+  </p>
+  <ul>
+    <li><strong>100 sample employees</strong>: quick to load, ideal for a walkthrough.</li>
+    <li>
+      <strong>Full 10,000</strong>: ACME's real headcount across 8 countries, for realistic
+      insights.
+    </li>
+  </ul>
+
+  @if (seeding(); as count) {
+    <div class="status" role="status">
+      <mat-spinner diameter="24" aria-hidden="true" />
+      <span>Loading {{ count === 100 ? '100' : '10,000' }} employees…</span>
+    </div>
+  }
+  @if (error(); as message) {
+    <div class="error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" [disabled]="seeding() !== null" (click)="load(100)">
+    Load 100 sample employees
+  </button>
+  <button mat-flat-button type="button" [disabled]="seeding() !== null" (click)="load(10000)">
+    Load full 10,000
+  </button>
+</mat-dialog-actions>

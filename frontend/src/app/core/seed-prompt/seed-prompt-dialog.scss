@@ -1,0 +1,25 @@
+ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+li + li {
+  margin-top: 4px;
+}
+
+.status,
+.error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.error {
+  color: var(--mat-sys-error);
+}
+
+mat-dialog-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
