@@ -128,3 +128,17 @@ Integration needs a view of both halves at once, so I did this phase myself inst
   - The deployment shape had to change.
   - A live test accidentally hit the user's own running dev server.
 - **Verified rather than trusted:** every agent report was re-checked by re-running the full suites on the merged `main`, and insight figures were checked against independent SQL.
+
+### Phase 5: Demo video recorded with Playwright
+**Request:** "Can you create the demo video by recording using Playwright?" The human chose to record against the live site, with no captions, and to commit both the script and the video. The human also set a rule mid-task: **stop after five unsuccessful attempts and solve the problem together.**
+
+- **Approach.** `docs/demo/record-demo.mjs` drives the installed Chrome through the demo script: seed, search, filters, sort, validation, a duplicate-email 409, edit, delete, CSV export, every insights section, and Swagger. It draws a visible cursor and moves it smoothly to each target so viewers can follow. Any run can save a screenshot per step, so a person (or the AI) can review frames instead of trusting a pass/fail result. The run cleans up after itself: the demo employee is created, edited and deleted again.
+- **Attempts:**
+  1. Playwright's ffmpeg was missing.
+  2. The video was saved after the browser had already closed.
+  3. The paginator prints "of 10000" with no separator.
+  4. The live database had been seeded with 100 rows. The human restarted the service.
+  5. The seed dialog check used `isVisible({ timeout })`, which never waits: the timeout is ignored. Locally the dialog opened in time; on Render it opened a few hundred milliseconds later, so seeding was skipped.
+
+  **Stopped at five as instructed.** The diagnosis and a proposed fix went to the human, who approved one more attempt. The fix decides whether to seed from the API's employee count instead of from what is on screen, then *waits* for the dialog. That run succeeded.
+- **A data-safety bug caught in a dry run:** the seed contains a real "Priya Nair", so searching for the demo's "Priya Nair" matched seeded employees, and the edit and delete steps could have hit the wrong row. The demo now uses a name the generator can't produce, and it looks the row up by a unique per-run email. Every attempt ran against a local production build first, so this bug never reached the live data.

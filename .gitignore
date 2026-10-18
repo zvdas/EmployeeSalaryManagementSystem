@@ -27,3 +27,6 @@ Thumbs.db
 
 # Claude Code local state (agent worktrees)
 .claude/
+
+# Demo recording scratch output
+docs/demo/.video-tmp/

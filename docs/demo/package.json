@@ -1,0 +1,16 @@
+{
+  "name": "esms-demo-recording",
+  "private": true,
+  "description": "Records the demo video of the deployed app with Playwright",
+  "type": "module",
+  "scripts": {
+    "setup": "playwright install ffmpeg",
+    "record": "node record-demo.mjs"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}
