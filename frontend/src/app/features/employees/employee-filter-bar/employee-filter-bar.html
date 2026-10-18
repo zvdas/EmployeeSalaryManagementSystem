@@ -1,0 +1,40 @@
+<mat-form-field class="search" appearance="outline" subscriptSizing="dynamic">
+  <mat-label>Search</mat-label>
+  <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+  <input matInput [formControl]="search" placeholder="Name, email or code" />
+</mat-form-field>
+
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <mat-label>Country</mat-label>
+  <mat-select [value]="filters().country ?? ''" (selectionChange)="setCountry($event.value)">
+    <mat-option value="">All countries</mat-option>
+    @for (country of meta.countries(); track country.code) {
+      <mat-option [value]="country.code">{{ country.name }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <mat-label>Department</mat-label>
+  <mat-select [value]="filters().department ?? ''" (selectionChange)="setDepartment($event.value)">
+    <mat-option value="">All departments</mat-option>
+    @for (department of meta.departments(); track department) {
+      <mat-option [value]="department">{{ department }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <mat-label>Job title</mat-label>
+  <mat-select [value]="filters().jobTitle ?? ''" (selectionChange)="setJobTitle($event.value)">
+    <mat-option value="">All job titles</mat-option>
+    @for (title of titles(); track title) {
+      <mat-option [value]="title">{{ title }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+
+<button mat-button type="button" [disabled]="!hasFilters()" (click)="clear()">
+  <mat-icon>filter_alt_off</mat-icon>
+  Clear filters
+</button>

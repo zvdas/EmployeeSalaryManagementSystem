@@ -1,0 +1,22 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+mat-form-field {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.search {
+  flex: 2 1 240px;
+}
+
+@media (max-width: 599px) {
+  mat-form-field,
+  .search {
+    flex-basis: 100%;
+  }
+}
