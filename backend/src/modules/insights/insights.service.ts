@@ -20,24 +20,31 @@ export class InsightsService {
   summary(): Summary {
     const totals = this.repo.summaryTotals();
     return {
-      ...totals,
+      headcount: totals.headcount,
       totalPayrollUsd: roundMoney(totals.totalPayrollUsd),
       avgSalaryUsd: average(totals.totalPayrollUsd, totals.headcount),
       medianSalaryUsd: roundMoney(median(this.repo.sortedUsdSalaries())),
+      countryCount: totals.countryCount,
+      departmentCount: totals.departmentCount,
     };
   }
 
   byCountry(): CountryStats[] {
     const salaries = this.repo.sortedSalariesBy('country', 'local');
 
-    return this.repo.countryTotals().map(({ usdRate, totalSalary, ...row }) => {
+    return this.repo.countryTotals().map((row) => {
       const medianSalary = median(salaries.get(row.countryCode) ?? []);
       return {
-        ...row,
-        avgSalary: average(totalSalary, row.headcount),
+        countryCode: row.countryCode,
+        countryName: row.countryName,
+        currency: row.currency,
+        headcount: row.headcount,
+        minSalary: row.minSalary,
+        maxSalary: row.maxSalary,
+        avgSalary: average(row.totalSalary, row.headcount),
         medianSalary: roundMoney(medianSalary),
         avgSalaryUsd: average(row.totalPayrollUsd, row.headcount),
-        medianSalaryUsd: toUsd(medianSalary, usdRate),
+        medianSalaryUsd: toUsd(medianSalary, row.usdRate),
         totalPayrollUsd: roundMoney(row.totalPayrollUsd),
       };
     });

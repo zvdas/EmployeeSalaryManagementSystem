@@ -1,15 +1,17 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { COUNTRIES, DEPARTMENTS, EMPLOYMENT_TYPES, JOB_TITLES } from '../../domain/reference.js';
+import { z } from '../../lib/zod.js';
 
-export const metaSchema = z.object({
-  countries: z.array(
-    z.object({ code: z.string(), name: z.string(), currency: z.string(), usdRate: z.number() }),
-  ),
-  departments: z.array(z.string()),
-  jobTitles: z.array(z.object({ title: z.string(), department: z.string() })),
-  employmentTypes: z.array(z.enum(EMPLOYMENT_TYPES)),
-});
+export const metaSchema = z
+  .object({
+    countries: z.array(
+      z.object({ code: z.string(), name: z.string(), currency: z.string(), usdRate: z.number() }),
+    ),
+    departments: z.array(z.string()),
+    jobTitles: z.array(z.object({ title: z.string(), department: z.string() })),
+    employmentTypes: z.array(z.enum(EMPLOYMENT_TYPES)),
+  })
+  .openapi('Meta');
 
 export type Meta = z.output<typeof metaSchema>;
 

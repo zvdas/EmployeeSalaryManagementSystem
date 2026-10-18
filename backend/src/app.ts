@@ -1,10 +1,10 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
-import helmet from 'helmet';
 import type { Database } from 'better-sqlite3';
 import { config } from './config.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
+import { securityHeaders } from './middleware/securityHeaders.js';
 import { createApiRouter } from './routes.js';
 
 export interface AppDeps {
@@ -18,8 +18,9 @@ export function createApp(deps: AppDeps): Express {
   const app = express();
 
   app.disable('x-powered-by');
-  app.use(helmet());
-  app.use(cors({ origin: [...config.CORS_ORIGIN] }));
+  app.use(securityHeaders);
+  // Expose Content-Disposition so the UI can read the CSV export's file name.
+  app.use(cors({ origin: [...config.CORS_ORIGIN], exposedHeaders: ['Content-Disposition'] }));
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/api', createApiRouter(deps));

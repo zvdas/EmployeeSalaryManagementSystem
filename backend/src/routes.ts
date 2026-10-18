@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { AppDeps } from './app.js';
+import { createDocsRouter } from './docs/docs.routes.js';
 import { EmployeeRepository } from './modules/employees/employee.repository.js';
 import { createEmployeeRouter } from './modules/employees/employee.routes.js';
 import { EmployeeService } from './modules/employees/employee.service.js';
@@ -26,6 +27,7 @@ export function createApiRouter({ db, now }: AppDeps): Router {
   router.use('/seed', createSeedRouter(seed));
   router.use('/employees', createEmployeeRouter(employees));
   router.use('/insights', createInsightsRouter(insights));
+  router.use(createDocsRouter()); // /openapi.json and /docs
 
   return router;
 }
