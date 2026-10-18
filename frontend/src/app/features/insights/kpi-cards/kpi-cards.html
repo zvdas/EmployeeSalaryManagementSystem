@@ -1,0 +1,28 @@
+@let s = summary();
+<mat-card appearance="outlined" class="kpi">
+  <mat-icon aria-hidden="true">groups</mat-icon>
+  <div class="label">Headcount</div>
+  <div class="value">{{ s.headcount | number }}</div>
+  <div class="hint">{{ s.countryCount }} countries · {{ s.departmentCount }} departments</div>
+</mat-card>
+
+<mat-card appearance="outlined" class="kpi">
+  <mat-icon aria-hidden="true">payments</mat-icon>
+  <div class="label">Total annual payroll</div>
+  <div class="value">{{ s.totalPayrollUsd | money }}</div>
+  <div class="hint">USD, at static FX rates</div>
+</mat-card>
+
+<mat-card appearance="outlined" class="kpi">
+  <mat-icon aria-hidden="true">functions</mat-icon>
+  <div class="label">Average salary</div>
+  <div class="value">{{ s.avgSalaryUsd | money }}</div>
+  <div class="hint">USD</div>
+</mat-card>
+
+<mat-card appearance="outlined" class="kpi">
+  <mat-icon aria-hidden="true">align_vertical_center</mat-icon>
+  <div class="label">Median salary</div>
+  <div class="value">{{ s.medianSalaryUsd | money }}</div>
+  <div class="hint">USD</div>
+</mat-card>

@@ -1,0 +1,58 @@
+<mat-card appearance="outlined" class="section-card">
+  <div class="section-header">
+    <h2>By country</h2>
+    <span class="muted">Local currency unless marked USD</span>
+  </div>
+  <div class="section-body">
+    <div class="table-scroll">
+      <table mat-table [dataSource]="rows()" class="data-table" aria-label="Salary by country">
+        <ng-container matColumnDef="country">
+          <th mat-header-cell *matHeaderCellDef>Country</th>
+          <td mat-cell *matCellDef="let r">{{ r.countryName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="headcount">
+          <th mat-header-cell *matHeaderCellDef class="num">Headcount</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.headcount | number }}</td>
+        </ng-container>
+        <ng-container matColumnDef="min">
+          <th mat-header-cell *matHeaderCellDef class="num">Min</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.minSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="avg">
+          <th mat-header-cell *matHeaderCellDef class="num">Average</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.avgSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="median">
+          <th mat-header-cell *matHeaderCellDef class="num">Median</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.medianSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="max">
+          <th mat-header-cell *matHeaderCellDef class="num">Max</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.maxSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="avgUsd">
+          <th mat-header-cell *matHeaderCellDef class="num">Average (USD)</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.avgSalaryUsd | money }}</td>
+        </ng-container>
+        <ng-container matColumnDef="payrollUsd">
+          <th mat-header-cell *matHeaderCellDef class="num">Payroll (USD)</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.totalPayrollUsd | money }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      </table>
+    </div>
+
+    <div class="chart-box">
+      <canvas
+        baseChart
+        type="bar"
+        [data]="chartData()"
+        [options]="chartOptions"
+        aria-label="Average and median salary in USD by country"
+        role="img"
+      ></canvas>
+    </div>
+  </div>
+</mat-card>

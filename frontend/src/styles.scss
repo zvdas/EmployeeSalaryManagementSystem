@@ -30,3 +30,49 @@ body {
 *::after {
   box-sizing: border-box;
 }
+
+// Shared layout helpers for data sections (tables and charts).
+.section-card {
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 16px 0;
+
+    h2 {
+      margin: 0;
+      font: var(--mat-sys-title-medium);
+    }
+  }
+
+  .section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.chart-box {
+  position: relative;
+  height: 320px;
+}

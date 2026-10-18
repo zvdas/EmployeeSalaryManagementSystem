@@ -25,10 +25,6 @@
   height: 4px;
 }
 
-.table-scroll {
-  overflow-x: auto;
-}
-
 table {
   width: 100%;
   min-width: 960px;
@@ -51,10 +47,6 @@ table {
 
 .code {
   font-variant-numeric: tabular-nums;
-}
-
-.num {
-  text-align: right;
 }
 
 .empty-state {

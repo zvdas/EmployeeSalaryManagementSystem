@@ -1,0 +1,26 @@
+<header class="page-header">
+  <h1>Insights</h1>
+  <p class="muted">USD figures use static exchange rates. All amounts are annual.</p>
+</header>
+
+<div class="progress-slot">
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading insights" />
+  }
+</div>
+
+@if (summary(); as s) {
+  @if (s.headcount === 0) {
+    <p class="muted empty-state">
+      No employees yet. Add employees or load sample data to see insights.
+    </p>
+  } @else {
+    <app-kpi-cards [summary]="s" />
+    <app-country-stats [rows]="byCountry()" />
+    <div class="two-up">
+      <app-job-title-stats [countries]="countries()" />
+      <app-department-stats [countries]="countries()" />
+    </div>
+    <app-salary-distribution [countries]="countries()" />
+  }
+}

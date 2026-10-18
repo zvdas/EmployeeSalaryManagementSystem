@@ -1,6 +1,5 @@
 import { DatePipe, DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -22,6 +21,7 @@ import {
 } from '../../../core/models';
 import { DataRefreshService } from '../../../core/services/data-refresh.service';
 import { EmployeeApiService } from '../../../core/services/employee-api.service';
+import { refreshableLoad } from '../../../core/services/refreshable-load';
 import { MetaService } from '../../../core/services/meta.service';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog';
 import { downloadBlob } from '../../../shared/download';
@@ -95,25 +95,13 @@ export class EmployeeList {
     pageSize: this.pageSize(),
   }));
 
-  protected readonly loading = signal(false);
   protected readonly exporting = signal(false);
 
-  /** Re-runs on every query or refresh change; switchMap cancels the superseded request. */
-  private readonly result = toSignal(
-    toObservable(computed(() => ({ query: this.query(), version: this.refresh.version() }))).pipe(
-      switchMap(({ query }) => {
-        this.loading.set(true);
-        return this.api.list(query).pipe(
-          catchError(() => EMPTY),
-          finalize(() => this.loading.set(false)),
-        );
-      }),
-    ),
-    { initialValue: null },
-  );
-
-  protected readonly rows = computed(() => this.result()?.items ?? []);
-  protected readonly total = computed(() => this.result()?.total ?? 0);
+  /** Reloads on every query change and data refresh, cancelling superseded requests. */
+  private readonly result = refreshableLoad(this.query, (query) => this.api.list(query));
+  protected readonly loading = this.result.loading;
+  protected readonly rows = computed(() => this.result.value()?.items ?? []);
+  protected readonly total = computed(() => this.result.value()?.total ?? 0);
 
   protected onFiltersChange(filters: EmployeeFilters): void {
     this.filters.set(filters);

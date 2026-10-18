@@ -1,0 +1,33 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  h1 {
+    margin: 0;
+    font: var(--mat-sys-headline-small);
+  }
+
+  p {
+    margin: 4px 0 0;
+  }
+}
+
+.progress-slot {
+  height: 4px;
+  margin-top: -12px;
+}
+
+.two-up {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.empty-state {
+  padding: 48px 16px;
+  text-align: center;
+}

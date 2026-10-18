@@ -1,0 +1,29 @@
+<mat-card appearance="outlined" class="section-card">
+  <div class="section-header">
+    <h2>Salary distribution (USD)</h2>
+    <app-country-select [countries]="countries()" [allowAll]="true" [(value)]="country" />
+  </div>
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading salary distribution" />
+  }
+  <div class="section-body">
+    @if (chartData(); as data) {
+      <div class="chart-box">
+        <canvas
+          baseChart
+          type="bar"
+          [data]="data"
+          [options]="chartOptions"
+          aria-label="Number of employees per salary range in USD"
+          role="img"
+        ></canvas>
+      </div>
+    }
+    @if (distribution()?.outliers; as o) {
+      <p class="muted">
+        Outliers (1.5×IQR rule): {{ o.lowCount | number }} below {{ o.lowThreshold | money }} and
+        {{ o.highCount | number }} above {{ o.highThreshold | money }}.
+      </p>
+    }
+  </div>
+</mat-card>

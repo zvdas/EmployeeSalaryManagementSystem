@@ -1,0 +1,49 @@
+<mat-card appearance="outlined" class="section-card">
+  <div class="section-header">
+    <h2>Job titles in a country</h2>
+    <app-country-select [countries]="countries()" [(value)]="country" />
+  </div>
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading job title statistics" />
+  }
+  <div class="section-body">
+    <div class="table-scroll">
+      <table mat-table [dataSource]="rows()" class="data-table" aria-label="Salary by job title">
+        <ng-container matColumnDef="jobTitle">
+          <th mat-header-cell *matHeaderCellDef>Job title</th>
+          <td mat-cell *matCellDef="let r">{{ r.jobTitle }}</td>
+        </ng-container>
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef>Department</th>
+          <td mat-cell *matCellDef="let r">{{ r.department }}</td>
+        </ng-container>
+        <ng-container matColumnDef="headcount">
+          <th mat-header-cell *matHeaderCellDef class="num">Headcount</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.headcount | number }}</td>
+        </ng-container>
+        <ng-container matColumnDef="min">
+          <th mat-header-cell *matHeaderCellDef class="num">Min</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.minSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="avg">
+          <th mat-header-cell *matHeaderCellDef class="num">Average</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.avgSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="median">
+          <th mat-header-cell *matHeaderCellDef class="num">Median</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.medianSalary | money: r.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="max">
+          <th mat-header-cell *matHeaderCellDef class="num">Max</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.maxSalary | money: r.currency }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      </table>
+    </div>
+    @if (!loading() && rows().length === 0) {
+      <p class="muted">No employees in this country yet.</p>
+    }
+  </div>
+</mat-card>
