@@ -7,11 +7,14 @@ import { InsightsRepository } from './modules/insights/insights.repository.js';
 import { createInsightsRouter } from './modules/insights/insights.routes.js';
 import { InsightsService } from './modules/insights/insights.service.js';
 import { createMetaRouter } from './modules/meta/meta.routes.js';
+import { createSeedRouter } from './modules/seed/seed.routes.js';
+import { SeedService } from './modules/seed/seed.service.js';
 
 /** Builds the `/api` router, wiring each module's repository → service → routes. */
 export function createApiRouter({ db, now }: AppDeps): Router {
   const employees = new EmployeeService(new EmployeeRepository(db), now);
   const insights = new InsightsService(new InsightsRepository(db));
+  const seed = new SeedService(db);
 
   const router = Router();
 
@@ -20,6 +23,7 @@ export function createApiRouter({ db, now }: AppDeps): Router {
   });
 
   router.use('/meta', createMetaRouter());
+  router.use('/seed', createSeedRouter(seed));
   router.use('/employees', createEmployeeRouter(employees));
   router.use('/insights', createInsightsRouter(insights));
 
