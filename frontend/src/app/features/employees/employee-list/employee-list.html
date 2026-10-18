@@ -108,7 +108,9 @@
     </table>
 
     @if (!loading() && rows().length === 0) {
-      <p class="empty-state">No employees match your filters.</p>
+      <p class="empty-state">
+        {{ hasFilters() ? 'No employees match your filters.' : 'No employees yet.' }}
+      </p>
     }
   </div>
 

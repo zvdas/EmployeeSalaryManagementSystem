@@ -83,6 +83,7 @@ export class EmployeeList {
   protected readonly defaultSort = DEFAULT_SORT;
 
   protected readonly filters = signal<EmployeeFilters>({});
+  protected readonly hasFilters = computed(() => Object.values(this.filters()).some(Boolean));
   private readonly sort = signal(DEFAULT_SORT);
   /** 1-based, as the API expects. */
   protected readonly page = signal(1);

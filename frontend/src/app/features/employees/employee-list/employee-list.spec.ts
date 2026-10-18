@@ -96,8 +96,19 @@ describe('EmployeeList', () => {
     );
   });
 
-  it('shows an empty state when nothing matches', async () => {
+  it('shows an empty state for an empty directory', async () => {
     await respond(expectList());
+    expect(text()).toContain('No employees yet.');
+  });
+
+  it('shows a no-match empty state when filters exclude everyone', async () => {
+    await respond(expectList(), [employeeFixture()], 1);
+    const bar = fixture.debugElement.query(By.directive(EmployeeFilterBar))
+      .componentInstance as EmployeeFilterBar;
+    bar.filtersChange.emit({ search: 'nobody' });
+    await fixture.whenStable();
+    await respond(expectList());
+
     expect(text()).toContain('No employees match your filters.');
   });
 
