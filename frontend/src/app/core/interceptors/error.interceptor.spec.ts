@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiError } from '../models';
 import {
   errorInterceptor,
+  inlineErrors,
   FALLBACK_ERROR_MESSAGE,
   OFFLINE_ERROR_MESSAGE,
 } from './error.interceptor';
@@ -90,5 +91,29 @@ describe('errorInterceptor', () => {
 
     await expect(result).resolves.toEqual({ ok: true });
     expect(open).not.toHaveBeenCalled();
+  });
+
+  describe('with inline error statuses', () => {
+    function postWithInline(status: number): Promise<unknown> {
+      const result = firstValueFrom(http.post('/form', {}, { context: inlineErrors(400, 409) }));
+      controller.expectOne('/form').flush(conflict, { status, statusText: 'Error' });
+      return result.then(
+        () => undefined,
+        (err: unknown) => err,
+      );
+    }
+
+    it('skips the snackbar for statuses the caller shows inline, but still rethrows', async () => {
+      const err = await postWithInline(409);
+
+      expect(open).not.toHaveBeenCalled();
+      expect(err).toMatchObject({ status: 409 });
+    });
+
+    it('still shows the snackbar for other statuses', async () => {
+      await postWithInline(500);
+
+      expect(open).toHaveBeenCalledWith('Email already exists', 'Dismiss', expect.any(Object));
+    });
   });
 });

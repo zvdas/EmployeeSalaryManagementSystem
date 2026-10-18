@@ -21,7 +21,10 @@
     }
     @if (distribution()?.outliers; as o) {
       <p class="muted">
-        Outliers (1.5×IQR rule): {{ o.lowCount | number }} below {{ o.lowThreshold | money }} and
+        Outliers (1.5×IQR rule):
+        @if (o.lowThreshold > 0) {
+          {{ o.lowCount | number }} below {{ o.lowThreshold | money }} and
+        }
         {{ o.highCount | number }} above {{ o.highThreshold | money }}.
       </p>
     }

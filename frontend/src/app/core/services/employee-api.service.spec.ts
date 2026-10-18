@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { environment } from '../../../environments/environment';
+import { INLINE_ERROR_STATUSES } from '../interceptors/error.interceptor';
 import { EmployeeInput } from '../models';
 import { EmployeeApiService } from './employee-api.service';
 
@@ -84,6 +85,18 @@ describe('EmployeeApiService', () => {
     const put = http.expectOne(`${base}/9`);
     expect(put.request.method).toBe('PUT');
     expect(put.request.body).toEqual(input);
+    put.flush({});
+  });
+
+  it('marks form submissions so 400/409 are shown on the form instead of a snackbar', () => {
+    service.create(input).subscribe();
+    const post = http.expectOne(base);
+    expect(post.request.context.get(INLINE_ERROR_STATUSES)).toEqual([400, 409]);
+    post.flush({});
+
+    service.update(9, input).subscribe();
+    const put = http.expectOne(`${base}/9`);
+    expect(put.request.context.get(INLINE_ERROR_STATUSES)).toEqual([400, 409]);
     put.flush({});
   });
 
