@@ -64,11 +64,15 @@ export const employeeFiltersSchema = z.object({
   jobTitle: optionalText,
 });
 
-export const employeeListQuerySchema = employeeFiltersSchema.extend({
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(25),
+/** Filters plus sort order: the CSV export query. */
+export const employeeExportQuerySchema = employeeFiltersSchema.extend({
   sortBy: z.enum(SORTABLE_FIELDS).default('fullName'),
   sortDir: z.enum(['asc', 'desc']).default('asc'),
+});
+
+export const employeeListQuerySchema = employeeExportQuerySchema.extend({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(25),
 });
 
 export const employeeListSchema = z.object({
@@ -85,6 +89,7 @@ export const employeeIdParamsSchema = z.object({
 export type EmployeeInput = z.output<typeof employeeInputSchema>;
 export type Employee = z.output<typeof employeeSchema>;
 export type EmployeeFilters = z.output<typeof employeeFiltersSchema>;
+export type EmployeeExportQuery = z.output<typeof employeeExportQuerySchema>;
 export type EmployeeListQuery = z.output<typeof employeeListQuerySchema>;
 export type EmployeeList = z.output<typeof employeeListSchema>;
 export type SortField = (typeof SORTABLE_FIELDS)[number];

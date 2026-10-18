@@ -84,10 +84,13 @@ function orderBy(sortBy: SortField, sortDir: SortDirection): string {
   return `ORDER BY ${SORT_COLUMNS[sortBy]} ${direction}, e.id ASC`;
 }
 
-export interface ListOptions {
+export interface SortedFilters {
   filters: EmployeeFilters;
   sortBy: SortField;
   sortDir: SortDirection;
+}
+
+export interface ListOptions extends SortedFilters {
   limit: number;
   offset: number;
 }
@@ -103,6 +106,16 @@ export class EmployeeRepository {
          ${orderBy(sortBy, sortDir)} LIMIT @limit OFFSET @offset`,
       )
       .all({ ...where.params, limit, offset }) as Employee[];
+  }
+
+  /** Every matching employee, one row at a time (the connection is busy until it finishes). */
+  iterate({ filters, sortBy, sortDir }: SortedFilters): IterableIterator<Employee> {
+    const where = buildWhere(filters);
+    return this.db
+      .prepare(
+        `SELECT ${EMPLOYEE_COLUMNS} ${FROM_EMPLOYEES} ${where.sql} ${orderBy(sortBy, sortDir)}`,
+      )
+      .iterate(where.params) as IterableIterator<Employee>;
   }
 
   count(filters: EmployeeFilters): number {

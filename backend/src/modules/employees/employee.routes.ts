@@ -1,10 +1,14 @@
 import { Router } from 'express';
+import { CSV_LINE_END, UTF8_BOM } from '../../lib/csv.js';
 import { validate, validated } from '../../middleware/validate.js';
+import { EXPORT_HEADER, employeeToCsvRow } from './employee.csv.js';
 import type { EmployeeService } from './employee.service.js';
 import {
+  employeeExportQuerySchema,
   employeeIdParamsSchema,
   employeeInputSchema,
   employeeListQuerySchema,
+  type EmployeeExportQuery,
   type EmployeeInput,
   type EmployeeListQuery,
 } from './employee.schemas.js';
@@ -16,6 +20,19 @@ export function createEmployeeRouter(service: EmployeeService): Router {
 
   router.get('/', validate({ query: employeeListQuerySchema }), (_req, res) => {
     res.json(service.list(validated<EmployeeListQuery>(res, 'query')));
+  });
+
+  // Registered before `/:id` so "export.csv" is not taken for an id.
+  router.get('/export.csv', validate({ query: employeeExportQuerySchema }), (_req, res) => {
+    const rows = service.exportRows(validated<EmployeeExportQuery>(res, 'query'));
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="employees.csv"');
+    // Rows are written synchronously on purpose: awaiting 'drain' mid-iteration would keep the
+    // shared SQLite connection busy for other requests.
+    res.write(UTF8_BOM + EXPORT_HEADER + CSV_LINE_END);
+    for (const employee of rows) res.write(employeeToCsvRow(employee) + CSV_LINE_END);
+    res.end();
   });
 
   router.get('/:id', validate({ params: employeeIdParamsSchema }), (_req, res) => {

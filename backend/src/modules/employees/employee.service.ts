@@ -8,6 +8,7 @@ import {
 import type { EmployeeRepository } from './employee.repository.js';
 import type {
   Employee,
+  EmployeeExportQuery,
   EmployeeInput,
   EmployeeList,
   EmployeeListQuery,
@@ -37,6 +38,11 @@ export class EmployeeService {
       offset: (page - 1) * pageSize,
     });
     return { items, total: this.repo.count(filters), page, pageSize };
+  }
+
+  /** All matching employees for export, streamed from the database. */
+  exportRows({ sortBy, sortDir, ...filters }: EmployeeExportQuery): IterableIterator<Employee> {
+    return this.repo.iterate({ filters, sortBy, sortDir });
   }
 
   get(id: number): Employee {
