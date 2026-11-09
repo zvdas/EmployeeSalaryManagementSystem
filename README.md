@@ -84,3 +84,5 @@ The work went in phases, each one committed in small steps:
 5. Deployment and documentation.
 
 The commit history shows that progression, and [docs/04-ai-prompts.md](docs/04-ai-prompts.md) records how the AI agents were directed and how their output was checked.
+
+**Note: This is a Take-home assignment from a hiring process.**
